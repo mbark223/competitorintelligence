@@ -66,7 +66,7 @@ function extractDemographics(text: string): Record<string, any> {
 }
 
 function extractBehaviors(text: string): string[] {
-  const behaviors = []
+  const behaviors: string[] = []
   
   const behaviorPatterns = {
     'purchase': ['buy', 'purchase', 'shop', 'order'],
