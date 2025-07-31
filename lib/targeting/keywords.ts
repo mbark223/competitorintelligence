@@ -1,6 +1,7 @@
 import { Keyword } from '@/types/targeting'
 import { nflKeywords } from '@/lib/data/nfl-keywords'
 import { analyzeProfile } from './generic-analyzer'
+import { getGamingKeywords, getGamingNegativeKeywords } from '@/lib/data/gaming-keywords'
 
 export async function generateKeywords(profile: string) {
   const profileLower = profile.toLowerCase()
@@ -8,6 +9,13 @@ export async function generateKeywords(profile: string) {
   const negativeKeywords: string[] = []
   
   const analysis = analyzeProfile(profile)
+  
+  // Check for gaming/gambling keywords
+  const isGambling = profileLower.includes('betting') || profileLower.includes('casino') || 
+                     profileLower.includes('gambl') || profileLower.includes('wager') ||
+                     profileLower.includes('sportsbook')
+  const isSportsbook = profileLower.includes('sports') && isGambling
+  const isCasino = profileLower.includes('casino') || profileLower.includes('slots')
 
   // Check if this is NFL-related
   if (analysis.isNFL) {
@@ -52,7 +60,7 @@ export async function generateKeywords(profile: string) {
   }
 
   // Generate industry-specific keywords
-  analysis.industries.forEach(industry => {
+  analysis.industries.forEach((industry: string) => {
     const industryKeywords = generateIndustryKeywords(industry, profile)
     keywords.push(...industryKeywords)
   })
@@ -70,8 +78,41 @@ export async function generateKeywords(profile: string) {
   // Generate negative keywords based on context
   const contextNegatives = generateNegativeKeywords(analysis.industries)
   negativeKeywords.push(...contextNegatives)
+  
+  // Add gaming-specific keywords if applicable
+  if (isGambling) {
+    const gamingType = isSportsbook && isCasino ? 'both' : isSportsbook ? 'sportsbook' : 'icasino'
+    const gamingKeywordsList = getGamingKeywords(gamingType)
+    
+    gamingKeywordsList.forEach((kw, index) => {
+      keywords.push({
+        text: kw,
+        matchType: index % 3 === 0 ? 'broad' : index % 3 === 1 ? 'phrase' : 'exact',
+        category: isSportsbook ? 'Sports Betting' : 'Online Casino'
+      })
+    })
+    
+    // Add gaming negative keywords
+    negativeKeywords.push(...getGamingNegativeKeywords())
+  }
+  
+  // Ensure minimum keyword count (50+)
+  if (keywords.length < 50) {
+    // Generate additional long-tail keywords
+    const longTailKeywords = generateLongTailKeywords(profile, analysis)
+    keywords.push(...longTailKeywords)
+  }
+  
+  // Add seasonal/trending keywords
+  const seasonalKeywords = generateSeasonalKeywords(analysis.industries)
+  keywords.push(...seasonalKeywords)
+  
+  // Remove duplicates
+  const uniqueKeywords = Array.from(
+    new Map(keywords.map(k => [k.text.toLowerCase(), k])).values()
+  )
 
-  return { keywords, negativeKeywords }
+  return { keywords: uniqueKeywords, negativeKeywords: [...new Set(negativeKeywords)] }
 }
 
 function generateIndustryKeywords(industry: string, profile: string): Keyword[] {
@@ -119,7 +160,7 @@ function generateBehaviorKeywords(behavior: string, profile: string, industries:
   const templates = behaviorTemplates[behavior] || []
   
   // Combine behavior templates with industries
-  industries.forEach(industry => {
+  industries.forEach((industry: string) => {
     templates.forEach(template => {
       keywords.push({
         text: `${template} ${industry}`,
@@ -153,7 +194,7 @@ function generateNegativeKeywords(industries: string[]): string[] {
     'finance': ['scam', 'fraud', 'ponzi', 'illegal'],
   }
   
-  industries.forEach(industry => {
+  industries.forEach((industry: string) => {
     if (industryNegatives[industry]) {
       negatives.push(...industryNegatives[industry])
     }
@@ -193,5 +234,101 @@ function extractGeneralKeywords(profile: string): Keyword[] {
     })
   })
 
+  return keywords
+}
+
+function generateLongTailKeywords(profile: string, analysis: any): Keyword[] {
+  const keywords: Keyword[] = []
+  const words = profile.toLowerCase().split(/\s+/)
+  
+  // Generate question-based keywords
+  const questionStarters = ['how to', 'what is', 'where to', 'when to', 'why', 'best way to']
+  const actions = ['find', 'choose', 'select', 'buy', 'get', 'start', 'learn']
+  
+  analysis.industries.forEach((industry: string) => {
+    questionStarters.forEach((starter: string) => {
+      keywords.push({
+        text: `${starter} ${industry}`,
+        matchType: 'phrase',
+        category: 'Long-tail Questions'
+      })
+    })
+    
+    actions.forEach((action: string) => {
+      keywords.push({
+        text: `${action} ${industry} online`,
+        matchType: 'phrase',
+        category: 'Long-tail Actions'
+      })
+    })
+  })
+  
+  // Generate location-based keywords if applicable
+  if (analysis.demographics.location && analysis.demographics.location.length > 0) {
+    analysis.demographics.location.forEach((location: string) => {
+      analysis.industries.forEach((industry: string) => {
+        keywords.push({
+          text: `${industry} ${location}`,
+          matchType: 'phrase',
+          category: 'Location-based'
+        })
+      })
+    })
+  }
+  
+  // Generate demographic-based keywords
+  if (analysis.demographics.ageRange) {
+    analysis.industries.forEach((industry: string) => {
+      keywords.push({
+        text: `${industry} for ${analysis.demographics.ageRange}`,
+        matchType: 'phrase',
+        category: 'Demographic Targeting'
+      })
+    })
+  }
+  
+  return keywords
+}
+
+function generateSeasonalKeywords(industries: string[]): Keyword[] {
+  const keywords: Keyword[] = []
+  const currentMonth = new Date().getMonth()
+  
+  const seasons = {
+    'spring': [2, 3, 4],
+    'summer': [5, 6, 7],
+    'fall': [8, 9, 10],
+    'winter': [11, 0, 1]
+  }
+  
+  const currentSeason = Object.entries(seasons).find(([_, months]) => 
+    months.includes(currentMonth)
+  )?.[0] || 'spring'
+  
+  const events = {
+    'spring': ['spring break', 'easter', 'tax season'],
+    'summer': ['summer vacation', 'fourth of july', 'back to school'],
+    'fall': ['halloween', 'black friday', 'thanksgiving'],
+    'winter': ['christmas', 'new year', 'valentines day']
+  }
+  
+  industries.forEach((industry: string) => {
+    // Season-specific keywords
+    keywords.push({
+      text: `${currentSeason} ${industry}`,
+      matchType: 'broad',
+      category: 'Seasonal'
+    })
+    
+    // Event-specific keywords
+    events[currentSeason as keyof typeof events]?.forEach((event: string) => {
+      keywords.push({
+        text: `${event} ${industry}`,
+        matchType: 'phrase',
+        category: 'Event-based'
+      })
+    })
+  })
+  
   return keywords
 }

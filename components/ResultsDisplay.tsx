@@ -85,7 +85,23 @@ export default function ResultsDisplay({ results }: ResultsDisplayProps) {
       className="bg-white rounded-lg shadow-lg p-6"
     >
       <div className="mb-6">
-        <h2 className="text-2xl font-semibold mb-2">Generated Targeting</h2>
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-2xl font-semibold">Generated Targeting</h2>
+          <div className="flex items-center gap-4">
+            <div className="text-sm">
+              <span className="font-medium text-gray-700">Total Items:</span>
+              <span className="ml-1 font-bold text-blue-600">
+                {results.keywords.length + results.influencers.length + results.interestCategories.length}
+              </span>
+            </div>
+            <div className="text-sm">
+              <span className="font-medium text-gray-700">Coverage:</span>
+              <span className="ml-1 font-bold text-green-600">
+                {getQualityScore(results)}%
+              </span>
+            </div>
+          </div>
+        </div>
         <p className="text-gray-600 text-sm">
           Generated at {new Date(results.generatedAt).toLocaleString()}
         </p>
@@ -108,7 +124,11 @@ export default function ResultsDisplay({ results }: ResultsDisplayProps) {
               >
                 <Icon className="w-4 h-4" />
                 {tab.label}
-                <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">
+                <span className={`px-2 py-0.5 rounded-full text-xs ${
+                  tab.count >= 20 ? 'bg-green-100 text-green-700' : 
+                  tab.count >= 10 ? 'bg-yellow-100 text-yellow-700' : 
+                  'bg-gray-100 text-gray-600'
+                }`}>
                   {tab.count}
                 </span>
               </button>
@@ -345,4 +365,33 @@ function InterestsList({ interests, selectedItems, copiedItems, onToggle, onCopy
       ))}
     </div>
   )
+}
+
+function getQualityScore(results: TargetingResults): number {
+  let score = 0
+  const weights = {
+    keywords: 40,
+    influencers: 30,
+    interests: 30
+  }
+  
+  // Keywords score
+  if (results.keywords.length >= 50) score += weights.keywords
+  else if (results.keywords.length >= 30) score += weights.keywords * 0.8
+  else if (results.keywords.length >= 20) score += weights.keywords * 0.6
+  else score += weights.keywords * (results.keywords.length / 20)
+  
+  // Influencers score
+  if (results.influencers.length >= 30) score += weights.influencers
+  else if (results.influencers.length >= 20) score += weights.influencers * 0.8
+  else if (results.influencers.length >= 10) score += weights.influencers * 0.6
+  else score += weights.influencers * (results.influencers.length / 10)
+  
+  // Interest categories score
+  if (results.interestCategories.length >= 10) score += weights.interests
+  else if (results.interestCategories.length >= 7) score += weights.interests * 0.8
+  else if (results.interestCategories.length >= 5) score += weights.interests * 0.6
+  else score += weights.interests * (results.interestCategories.length / 5)
+  
+  return Math.round(score)
 }

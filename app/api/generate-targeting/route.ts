@@ -3,6 +3,7 @@ import { TargetingResults } from '@/types/targeting'
 import { generateKeywords } from '@/lib/targeting/keywords'
 import { generateInfluencers } from '@/lib/targeting/influencers'
 import { generateInterestCategories } from '@/lib/targeting/interests'
+import { enrichProfileWithClaude4Prompt, generateEnrichedTargetingPrompt } from '@/lib/targeting/prompt-enrichment'
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,10 +16,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Generate targeting data based on the profile
-    const keywords = await generateKeywords(profile)
-    const influencers = await generateInfluencers(profile)
-    const interestCategories = await generateInterestCategories(profile)
+    // Enrich the profile using Claude 4-style prompt analysis
+    const enrichedProfile = enrichProfileWithClaude4Prompt(profile)
+    const enrichedPrompt = generateEnrichedTargetingPrompt(enrichedProfile)
+
+    // Generate targeting data based on the enriched profile
+    const keywords = await generateKeywords(enrichedPrompt)
+    const influencers = await generateInfluencers(enrichedPrompt)
+    const interestCategories = await generateInterestCategories(enrichedPrompt)
 
     const results: TargetingResults = {
       keywords: keywords.keywords,

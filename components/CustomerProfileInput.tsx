@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Sparkles, Target } from 'lucide-react'
+import { Sparkles, Target, ChevronDown } from 'lucide-react'
+import { gamingPresets, GamingPreset } from '@/lib/data/gaming-presets'
 
 interface CustomerProfileInputProps {
   onGenerate: (profile: string) => void
@@ -18,6 +19,8 @@ const exampleProfiles = [
 export default function CustomerProfileInput({ onGenerate, loading }: CustomerProfileInputProps) {
   const [profile, setProfile] = useState('')
   const [error, setError] = useState('')
+  const [showPresets, setShowPresets] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState<'all' | 'sportsbook' | 'icasino' | 'both'>('all')
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -35,6 +38,16 @@ export default function CustomerProfileInput({ onGenerate, loading }: CustomerPr
     setProfile(example)
     setError('')
   }
+
+  const handlePresetClick = (preset: GamingPreset) => {
+    setProfile(preset.profile)
+    setError('')
+    setShowPresets(false)
+  }
+
+  const filteredPresets = selectedCategory === 'all' 
+    ? gamingPresets 
+    : gamingPresets.filter(p => p.category === selectedCategory)
 
   return (
     <motion.div
@@ -69,20 +82,81 @@ export default function CustomerProfileInput({ onGenerate, loading }: CustomerPr
           )}
         </div>
 
-        <div className="space-y-2">
-          <p className="text-sm text-gray-600 font-medium">Quick examples:</p>
-          <div className="flex flex-wrap gap-2">
-            {exampleProfiles.map((example, index) => (
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <p className="text-sm text-gray-600 font-medium">Quick examples:</p>
+            <div className="flex flex-wrap gap-2">
+              {exampleProfiles.map((example, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => handleExampleClick(example)}
+                  className="text-xs px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
+                  disabled={loading}
+                >
+                  Example {index + 1}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-gray-600 font-medium">Gaming presets:</p>
               <button
-                key={index}
                 type="button"
-                onClick={() => handleExampleClick(example)}
-                className="text-xs px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
-                disabled={loading}
+                onClick={() => setShowPresets(!showPresets)}
+                className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
               >
-                Example {index + 1}
+                {showPresets ? 'Hide' : 'Show'} presets
+                <ChevronDown className={`w-4 h-4 transition-transform ${showPresets ? 'rotate-180' : ''}`} />
               </button>
-            ))}
+            </div>
+            
+            {showPresets && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="space-y-3 pt-2"
+              >
+                <div className="flex gap-2 flex-wrap">
+                  {(['all', 'sportsbook', 'icasino', 'both'] as const).map((cat) => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`text-xs px-3 py-1 rounded-full transition-colors ${
+                        selectedCategory === cat
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                      }`}
+                    >
+                      {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                    </button>
+                  ))}
+                </div>
+                
+                <div className="max-h-60 overflow-y-auto space-y-2 pr-2">
+                  {filteredPresets.map((preset) => (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      onClick={() => handlePresetClick(preset)}
+                      className="w-full text-left p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors group"
+                      disabled={loading}
+                    >
+                      <div className="font-medium text-sm group-hover:text-blue-600">
+                        {preset.name}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {preset.description}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
           </div>
         </div>
 
