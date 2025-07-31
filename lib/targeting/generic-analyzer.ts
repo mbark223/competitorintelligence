@@ -87,7 +87,7 @@ function extractBehaviors(text: string): string[] {
 }
 
 function extractInterests(text: string): string[] {
-  const interests = []
+  const interests: string[] = []
   const words = text.split(/\s+/)
   
   // Look for interest indicators
