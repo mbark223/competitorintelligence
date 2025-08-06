@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --twitter-blue: #1DA1F2;
+    --twitter-black: #14171A;
+    --twitter-dark-gray: #657786;
+    --twitter-light-gray: #AAB8C2;
+    --twitter-extra-light-gray: #E1E8ED;
+    --twitter-background: #F5F8FA;
+  }
+
+  body {
+    @apply bg-twitter-background text-twitter-black;
+  }
+}
+
+@layer components {
+  .twitter-button {
+    @apply bg-twitter-blue text-white px-6 py-3 rounded-full font-semibold hover:bg-blue-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-twitter-blue focus:ring-offset-2;
+  }
+
+  .twitter-card {
+    @apply bg-white rounded-lg shadow-sm border border-twitter-extra-light-gray p-6 hover:shadow-md transition-shadow duration-200;
+  }
+
+  .twitter-input {
+    @apply w-full px-4 py-3 border border-twitter-extra-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-twitter-blue focus:border-transparent transition-all duration-200;
+  }
+
+  .result-section {
+    @apply mb-6 p-4 bg-gray-50 rounded-lg;
+  }
+
+  .result-item {
+    @apply inline-block bg-white px-3 py-1 m-1 rounded-full text-sm border border-twitter-extra-light-gray hover:border-twitter-blue transition-colors cursor-pointer;
+  }
+}
