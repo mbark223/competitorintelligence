@@ -3,16 +3,41 @@ import { floridaSportsbookData } from '@/lib/data/floridaSportsbookData'
 
 export class HandleGenerator {
   private static handlePatterns = [
+    // Official variations
     { pattern: '@{keyword}', category: 'official' as const },
     { pattern: '@{keyword}Official', category: 'official' as const },
     { pattern: '@{keyword}HQ', category: 'official' as const },
+    { pattern: '@{keyword}Corp', category: 'official' as const },
+    { pattern: '@{keyword}Inc', category: 'official' as const },
+    { pattern: '@{keyword}Co', category: 'official' as const },
+    { pattern: '@The{keyword}', category: 'official' as const },
+    { pattern: '@Real{keyword}', category: 'official' as const },
+    { pattern: '@Official{keyword}', category: 'official' as const },
+    { pattern: '@{keyword}Brand', category: 'official' as const },
+    
+    // Media variations
     { pattern: '@{keyword}News', category: 'media' as const },
     { pattern: '@{keyword}Daily', category: 'media' as const },
     { pattern: '@{keyword}Updates', category: 'media' as const },
+    { pattern: '@{keyword}Media', category: 'media' as const },
+    { pattern: '@{keyword}Press', category: 'media' as const },
+    { pattern: '@{keyword}TV', category: 'media' as const },
+    { pattern: '@{keyword}Live', category: 'media' as const },
+    { pattern: '@{keyword}Report', category: 'media' as const },
+    { pattern: '@{keyword}Wire', category: 'media' as const },
+    { pattern: '@{keyword}Alert', category: 'media' as const },
+    
+    // Community variations
     { pattern: '@{keyword}Community', category: 'community' as const },
     { pattern: '@{keyword}Fans', category: 'community' as const },
-    { pattern: '@The{keyword}', category: 'official' as const },
-    { pattern: '@Real{keyword}', category: 'official' as const },
+    { pattern: '@{keyword}Nation', category: 'community' as const },
+    { pattern: '@{keyword}Hub', category: 'community' as const },
+    { pattern: '@{keyword}Central', category: 'community' as const },
+    { pattern: '@{keyword}Club', category: 'community' as const },
+    { pattern: '@{keyword}Squad', category: 'community' as const },
+    { pattern: '@{keyword}Team', category: 'community' as const },
+    { pattern: '@{keyword}Forum', category: 'community' as const },
+    { pattern: '@{keyword}Talk', category: 'community' as const },
   ]
 
   private static industryHandles: Record<string, TwitterHandle[]> = {

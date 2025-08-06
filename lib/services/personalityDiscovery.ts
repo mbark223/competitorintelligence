@@ -75,40 +75,246 @@ export class PersonalityDiscovery {
     }
 
     // Generate generic personalities based on keyword
+    // Twitter allows targeting up to 100 usernames, so we'll generate plenty
+    const keywordNoSpace = keyword.replace(/\s+/g, '')
+    const keywordLower = keyword.toLowerCase().replace(/\s+/g, '')
+    
     const genericPersonalities: Personality[] = [
+      // Experts and authorities
       {
         name: `${keyword} Expert`,
-        handle: `@${keyword.replace(/\s+/g, '')}Expert`,
+        handle: `@${keywordNoSpace}Expert`,
         role: `Leading ${keyword} Authority`,
         influence: 'micro',
         verified: false
       },
       {
+        name: `${keyword} Pro`,
+        handle: `@${keywordNoSpace}Pro`,
+        role: `Professional ${keyword} Specialist`,
+        influence: 'micro',
+        verified: false
+      },
+      {
+        name: `${keyword} Master`,
+        handle: `@${keywordNoSpace}Master`,
+        role: `${keyword} Master`,
+        influence: 'micro',
+        verified: false
+      },
+      {
+        name: `${keyword} Guru`,
+        handle: `@${keywordNoSpace}Guru`,
+        role: `${keyword} Guru`,
+        influence: 'micro',
+        verified: false
+      },
+      {
+        name: `Dr. ${keyword}`,
+        handle: `@Dr${keywordNoSpace}`,
+        role: `${keyword} Doctor/Expert`,
+        influence: 'micro',
+        verified: false
+      },
+      
+      // News and media
+      {
         name: `${keyword} Daily`,
-        handle: `@${keyword.replace(/\s+/g, '')}Daily`,
+        handle: `@${keywordNoSpace}Daily`,
         role: `${keyword} News & Updates`,
         influence: 'micro',
         verified: false
       },
       {
+        name: `${keyword} Times`,
+        handle: `@${keywordNoSpace}Times`,
+        role: `${keyword} News Publication`,
+        influence: 'micro',
+        verified: false
+      },
+      {
+        name: `${keyword} Wire`,
+        handle: `@${keywordNoSpace}Wire`,
+        role: `${keyword} News Wire`,
+        influence: 'micro',
+        verified: false
+      },
+      {
+        name: `${keyword} Report`,
+        handle: `@${keywordNoSpace}Report`,
+        role: `${keyword} Reports`,
+        influence: 'micro',
+        verified: false
+      },
+      
+      // Content creators
+      {
         name: `The ${keyword} Guy`,
-        handle: `@The${keyword.replace(/\s+/g, '')}Guy`,
+        handle: `@The${keywordNoSpace}Guy`,
         role: `${keyword} Content Creator`,
         influence: 'nano',
         verified: false
       },
       {
+        name: `The ${keyword} Girl`,
+        handle: `@The${keywordNoSpace}Girl`,
+        role: `${keyword} Content Creator`,
+        influence: 'nano',
+        verified: false
+      },
+      {
+        name: `${keyword} Blogger`,
+        handle: `@${keywordNoSpace}Blog`,
+        role: `${keyword} Blogger`,
+        influence: 'nano',
+        verified: false
+      },
+      {
+        name: `${keyword} Vlogger`,
+        handle: `@${keywordNoSpace}Vlog`,
+        role: `${keyword} Video Creator`,
+        influence: 'nano',
+        verified: false
+      },
+      
+      // Industry insiders
+      {
         name: `${keyword} Insider`,
-        handle: `@${keyword.replace(/\s+/g, '')}Insider`,
+        handle: `@${keywordNoSpace}Insider`,
         role: `${keyword} Industry Insider`,
         influence: 'micro',
+        verified: false
+      },
+      {
+        name: `${keyword} Source`,
+        handle: `@${keywordNoSpace}Source`,
+        role: `${keyword} Information Source`,
+        influence: 'micro',
+        verified: false
+      },
+      {
+        name: `${keyword} Intel`,
+        handle: `@${keywordNoSpace}Intel`,
+        role: `${keyword} Intelligence`,
+        influence: 'micro',
+        verified: false
+      },
+      
+      // Community leaders
+      {
+        name: `${keyword} Community`,
+        handle: `@${keywordNoSpace}Comm`,
+        role: `${keyword} Community Leader`,
+        influence: 'micro',
+        verified: false
+      },
+      {
+        name: `${keyword} Nation`,
+        handle: `@${keywordNoSpace}Nation`,
+        role: `${keyword} Nation Leader`,
+        influence: 'micro',
+        verified: false
+      },
+      {
+        name: `${keyword} Club`,
+        handle: `@${keywordNoSpace}Club`,
+        role: `${keyword} Club President`,
+        influence: 'nano',
+        verified: false
+      },
+      
+      // Influencers
+      {
+        name: `${keyword} Influencer`,
+        handle: `@${keywordNoSpace}Inf`,
+        role: `${keyword} Influencer`,
+        influence: 'micro',
+        verified: false
+      },
+      {
+        name: `${keyword} Star`,
+        handle: `@${keywordNoSpace}Star`,
+        role: `${keyword} Star`,
+        influence: 'micro',
+        verified: false
+      },
+      {
+        name: `${keyword} Queen`,
+        handle: `@${keywordNoSpace}Queen`,
+        role: `${keyword} Queen`,
+        influence: 'nano',
+        verified: false
+      },
+      {
+        name: `${keyword} King`,
+        handle: `@${keywordNoSpace}King`,
+        role: `${keyword} King`,
+        influence: 'nano',
+        verified: false
+      },
+      
+      // Additional variations with underscores
+      {
+        name: `${keyword} Central`,
+        handle: `@${keywordLower}_central`,
+        role: `${keyword} Central Hub`,
+        influence: 'micro',
+        verified: false
+      },
+      {
+        name: `${keyword} HQ`,
+        handle: `@${keywordLower}_hq`,
+        role: `${keyword} Headquarters`,
+        influence: 'micro',
+        verified: false
+      },
+      {
+        name: `${keyword} Live`,
+        handle: `@${keywordLower}_live`,
+        role: `${keyword} Live Coverage`,
+        influence: 'micro',
+        verified: false
+      },
+      {
+        name: `${keyword} Updates`,
+        handle: `@${keywordLower}_updates`,
+        role: `${keyword} Updates`,
+        influence: 'micro',
+        verified: false
+      },
+      
+      // Numbered variations
+      {
+        name: `${keyword} 24/7`,
+        handle: `@${keywordNoSpace}247`,
+        role: `24/7 ${keyword} Coverage`,
+        influence: 'nano',
+        verified: false
+      },
+      {
+        name: `${keyword} 365`,
+        handle: `@${keywordNoSpace}365`,
+        role: `Daily ${keyword} Content`,
+        influence: 'nano',
+        verified: false
+      },
+      {
+        name: `${keyword} 101`,
+        handle: `@${keywordNoSpace}101`,
+        role: `${keyword} Basics`,
+        influence: 'nano',
         verified: false
       }
     ]
 
     personalities.push(...genericPersonalities)
 
-    return personalities
+    // Remove duplicates based on handle
+    const uniquePersonalities = Array.from(
+      new Map(personalities.map(p => [p.handle.toLowerCase(), p])).values()
+    )
+
+    return uniquePersonalities
   }
 
   static generateCompetitors(keyword: string): Competitor[] {
