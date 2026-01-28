@@ -655,7 +655,6 @@ export class AirtableClient {
 
     return ads
   }
-}
 
   // ========== STATS ==========
 
