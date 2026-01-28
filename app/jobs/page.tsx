@@ -1,61 +1,75 @@
+'use client'
+
+import { useState } from 'react'
+import CreateJobForm from '@/components/jobs/CreateJobForm'
+import JobsList from '@/components/jobs/JobsList'
+import JobDetailsDrawer from '@/components/jobs/JobDetailsDrawer'
+import { AdFetchJob } from '@/types/airtable'
+
+type EnhancedJob = AdFetchJob & { brandNames?: string[] }
+
 export default function JobsPage() {
+  const [selectedJob, setSelectedJob] = useState<EnhancedJob | null>(null)
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
+
+  const handleJobCreated = () => {
+    setRefreshTrigger(prev => prev + 1)
+  }
+
+  const handleJobUpdated = () => {
+    setRefreshTrigger(prev => prev + 1)
+    setSelectedJob(null)
+  }
+
+  const handleSelectJob = (job: EnhancedJob) => {
+    setSelectedJob(job)
+  }
+
   return (
     <main className="container mx-auto px-4 py-8">
+      {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Ad Fetch Jobs</h1>
-        <p className="text-gray-600">Monitor and manage ad scraping jobs</p>
+        <p className="text-gray-600">Create and monitor ad fetching jobs for your competitor brands</p>
       </div>
 
-      {/* Coming Soon Notice */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
-        <h2 className="text-lg font-semibold text-blue-900 mb-2">📊 Jobs Dashboard Coming Soon</h2>
-        <p className="text-blue-800 mb-4">
-          The jobs management UI is under development. In the meantime, you can:
-        </p>
-        <ul className="list-disc list-inside space-y-2 text-blue-800">
-          <li>View jobs directly in your Airtable base</li>
-          <li>Trigger jobs via webhook API endpoints</li>
-          <li>Monitor job status and logs in Airtable</li>
-        </ul>
+      {/* Create Job Form */}
+      <div className="mb-8">
+        <CreateJobForm onSuccess={handleJobCreated} />
       </div>
 
-      {/* Quick Actions */}
-      <div className="bg-white rounded-lg shadow p-6 mb-8">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Trigger New Job</h2>
-        <p className="text-gray-600 mb-4">
-          Use the webhook endpoint to trigger a new ad fetch job. You'll need a job record ID from Airtable.
-        </p>
-        <div className="bg-gray-50 p-4 rounded border border-gray-200">
-          <div className="text-sm font-medium text-gray-700 mb-2">Webhook Endpoint:</div>
-          <code className="text-sm text-gray-900">POST /api/webhooks/ad-fetch-jobs</code>
-          <div className="text-sm font-medium text-gray-700 mt-4 mb-2">Example Payload:</div>
-          <pre className="bg-gray-900 text-gray-100 p-3 rounded text-xs overflow-x-auto">
-{`{
-  "recordId": "recXXXXXXXXXXXXXX"
-}`}
-          </pre>
-        </div>
+      {/* Jobs List */}
+      <div className="mb-8">
+        <h2 className="text-xl font-bold text-gray-900 mb-4">Your Jobs</h2>
+        <JobsList
+          onSelectJob={handleSelectJob}
+          refreshTrigger={refreshTrigger}
+        />
       </div>
 
-      {/* Status Guide */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Job Status Guide</h2>
-        <div className="space-y-4">
-          <div className="flex items-start">
-            <span className="inline-block w-24 px-3 py-1 bg-yellow-100 text-yellow-800 rounded text-sm font-medium">Pending</span>
-            <p className="ml-4 text-gray-600 text-sm">Job created but not yet started</p>
+      {/* Job Details Drawer */}
+      <JobDetailsDrawer
+        isOpen={selectedJob !== null}
+        job={selectedJob}
+        onClose={() => setSelectedJob(null)}
+        onUpdate={handleJobUpdated}
+      />
+
+      {/* Info Section */}
+      <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <h2 className="text-lg font-semibold text-blue-900 mb-2">How It Works</h2>
+        <div className="space-y-3 text-blue-800 text-sm">
+          <div>
+            <strong>1. Create a Job:</strong> Select one or more brands to monitor and enable auto-trigger to start immediately
           </div>
-          <div className="flex items-start">
-            <span className="inline-block w-24 px-3 py-1 bg-blue-100 text-blue-800 rounded text-sm font-medium">Running</span>
-            <p className="ml-4 text-gray-600 text-sm">Job is currently fetching ads from Facebook</p>
+          <div>
+            <strong>2. Monitor Progress:</strong> Jobs update automatically - watch the status change from Pending → Running → Completed
           </div>
-          <div className="flex items-start">
-            <span className="inline-block w-24 px-3 py-1 bg-green-100 text-green-800 rounded text-sm font-medium">Completed</span>
-            <p className="ml-4 text-gray-600 text-sm">Job finished successfully, ads stored in Airtable</p>
+          <div>
+            <strong>3. View Results:</strong> Click any job to see details including number of ads fetched and any error messages
           </div>
-          <div className="flex items-start">
-            <span className="inline-block w-24 px-3 py-1 bg-red-100 text-red-800 rounded text-sm font-medium">Failed</span>
-            <p className="ml-4 text-gray-600 text-sm">Job encountered an error, check error_message field</p>
+          <div>
+            <strong>4. Access Ads:</strong> Once complete, browse fetched ads in the <a href="/ads" className="underline">Ads Library</a>
           </div>
         </div>
       </div>

@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import StatsCards from '@/components/dashboard/StatsCards'
+import RecentJobs from '@/components/dashboard/RecentJobs'
 
 export default function Home() {
   return (
@@ -13,24 +15,11 @@ export default function Home() {
       </div>
 
       {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-sm font-medium text-gray-600 mb-1">Total Ads</div>
-          <div className="text-3xl font-bold text-gray-900">-</div>
-          <div className="text-sm text-gray-500 mt-2">Across all brands</div>
-        </div>
+      <StatsCards />
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-sm font-medium text-gray-600 mb-1">Active Jobs</div>
-          <div className="text-3xl font-bold text-gray-900">-</div>
-          <div className="text-sm text-gray-500 mt-2">Currently running</div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-sm font-medium text-gray-600 mb-1">Analyzed Ads</div>
-          <div className="text-3xl font-bold text-gray-900">-</div>
-          <div className="text-sm text-gray-500 mt-2">With AI insights</div>
-        </div>
+      {/* Recent Jobs */}
+      <div className="mb-8">
+        <RecentJobs />
       </div>
 
       {/* Quick Actions */}

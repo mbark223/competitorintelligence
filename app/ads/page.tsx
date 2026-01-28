@@ -1,69 +1,113 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import AdFilters from '@/components/ads/AdFilters'
+import AdsGrid from '@/components/ads/AdsGrid'
+import AdDetailsModal from '@/components/ads/AdDetailsModal'
+import { AdIntelligence } from '@/types/airtable'
+
+type EnhancedAd = AdIntelligence & { brandName?: string }
+
 export default function AdsPage() {
+  const [ads, setAds] = useState<EnhancedAd[]>([])
+  const [loading, setLoading] = useState(true)
+  const [selectedAd, setSelectedAd] = useState<EnhancedAd | null>(null)
+  const [filters, setFilters] = useState<any>({})
+
+  useEffect(() => {
+    fetchAds()
+  }, [filters])
+
+  const fetchAds = async () => {
+    try {
+      setLoading(true)
+
+      const params = new URLSearchParams()
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) params.append(key, String(value))
+      })
+
+      const response = await fetch(`/api/ads?${params}`)
+      const data = await response.json()
+
+      if (data.success) {
+        setAds(data.data)
+      }
+    } catch (error) {
+      console.error('Error fetching ads:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleFilterChange = (newFilters: any) => {
+    setFilters(newFilters)
+  }
+
   return (
     <main className="container mx-auto px-4 py-8">
+      {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Ads Library</h1>
         <p className="text-gray-600">Browse and analyze fetched competitor ads</p>
       </div>
 
-      {/* Coming Soon Notice */}
-      <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-8">
-        <h2 className="text-lg font-semibold text-green-900 mb-2">📚 Ads Library Coming Soon</h2>
-        <p className="text-green-800 mb-4">
-          The ads browsing interface is under development. Currently you can:
-        </p>
-        <ul className="list-disc list-inside space-y-2 text-green-800">
-          <li>View all fetched ads in your Airtable "Ads (Ad Intelligence)" table</li>
-          <li>See ad creative, copy, and performance metrics</li>
-          <li>Filter and sort ads by brand, date, and format</li>
-        </ul>
-      </div>
-
-      {/* Features Preview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="font-semibold text-gray-900 mb-3">🔍 Advanced Filters</h3>
-          <p className="text-gray-600 text-sm mb-4">Filter ads by:</p>
-          <ul className="list-disc list-inside space-y-1 text-gray-600 text-sm">
-            <li>Brand / Competitor</li>
-            <li>Date Range</li>
-            <li>Platform (Facebook, Instagram)</li>
-            <li>Format (Video, Image, Carousel)</li>
-            <li>Status (Active, Inactive)</li>
-          </ul>
+      {/* Stats */}
+      <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white rounded-lg shadow p-4">
+          <div className="text-sm font-medium text-gray-600">Total Ads</div>
+          <div className="text-2xl font-bold text-gray-900 mt-1">{ads.length}</div>
         </div>
-
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="font-semibold text-gray-900 mb-3">🤖 AI Analysis</h3>
-          <p className="text-gray-600 text-sm mb-4">View Gemini AI insights:</p>
-          <ul className="list-disc list-inside space-y-1 text-gray-600 text-sm">
-            <li>Key themes and messaging</li>
-            <li>Sentiment analysis</li>
-            <li>Call-to-action effectiveness</li>
-            <li>Target audience identification</li>
-            <li>Competitive positioning</li>
-          </ul>
+        <div className="bg-white rounded-lg shadow p-4">
+          <div className="text-sm font-medium text-gray-600">Analyzed with AI</div>
+          <div className="text-2xl font-bold text-gray-900 mt-1">
+            {ads.filter(ad => ad.analysisCompleted).length}
+          </div>
+        </div>
+        <div className="bg-white rounded-lg shadow p-4">
+          <div className="text-sm font-medium text-gray-600">Video Ads</div>
+          <div className="text-2xl font-bold text-gray-900 mt-1">
+            {ads.filter(ad => ad.displayFormat?.toLowerCase().includes('video')).length}
+          </div>
         </div>
       </div>
 
-      {/* Quick Access */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Analyze Ads Now</h2>
-        <p className="text-gray-600 mb-4">
-          Trigger AI analysis for video ads using the analysis webhook:
-        </p>
-        <div className="bg-gray-50 p-4 rounded border border-gray-200">
-          <div className="text-sm font-medium text-gray-700 mb-2">Webhook Endpoint:</div>
-          <code className="text-sm text-gray-900">POST /api/webhooks/ad-analysis</code>
-          <div className="text-sm font-medium text-gray-700 mt-4 mb-2">Example Payload:</div>
-          <pre className="bg-gray-900 text-gray-100 p-3 rounded text-xs overflow-x-auto">
-{`{
-  "limit": 10,
-  "startDate": "2026-01-20"
-}`}
-          </pre>
-          <p className="text-xs text-gray-600 mt-3">
-            This will analyze up to 10 unanalyzed video ads created after the specified date.
+      {/* Main Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Filters Sidebar */}
+        <div className="lg:col-span-1">
+          <AdFilters onFilterChange={handleFilterChange} />
+        </div>
+
+        {/* Ads Grid */}
+        <div className="lg:col-span-3">
+          <AdsGrid
+            ads={ads}
+            loading={loading}
+            onSelectAd={setSelectedAd}
+          />
+        </div>
+      </div>
+
+      {/* Ad Details Modal */}
+      <AdDetailsModal
+        isOpen={selectedAd !== null}
+        ad={selectedAd}
+        onClose={() => setSelectedAd(null)}
+      />
+
+      {/* Info Section */}
+      <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <h2 className="text-lg font-semibold text-blue-900 mb-2">About the Ads Library</h2>
+        <div className="space-y-2 text-blue-800 text-sm">
+          <p>
+            <strong>Filtering:</strong> Use the sidebar filters to narrow down ads by brand, format, status, and more
+          </p>
+          <p>
+            <strong>AI Analysis:</strong> Video ads with the purple "AI" badge have been analyzed by Gemini. Click to view insights
+          </p>
+          <p>
+            <strong>Analysis Workflow:</strong> Run the ad analysis webhook to process unanalyzed video ads automatically
           </p>
         </div>
       </div>
