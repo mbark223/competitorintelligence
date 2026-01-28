@@ -9,10 +9,17 @@ import {
   AirtableFieldNames
 } from '@/types/airtable'
 
-// Initialize Airtable with environment variables
-const base = new Airtable({
-  apiKey: process.env.AIRTABLE_API_KEY
-}).base(process.env.AIRTABLE_BASE_ID || 'appYNUa6UKlilIt0Z')
+// Lazy initialization - only initialize when first used
+let _base: ReturnType<Airtable['base']> | null = null
+
+function getBase() {
+  if (!_base) {
+    _base = new Airtable({
+      apiKey: process.env.AIRTABLE_API_KEY
+    }).base(process.env.AIRTABLE_BASE_ID || 'appYNUa6UKlilIt0Z')
+  }
+  return _base
+}
 
 /**
  * Airtable Client
@@ -27,7 +34,7 @@ export class AirtableClient {
    */
   async getAdFetchJob(recordId: string): Promise<AdFetchJob | null> {
     try {
-      const record = await base(AirtableTables.AD_FETCH_JOBS).find(recordId)
+      const record = await getBase()(AirtableTables.AD_FETCH_JOBS).find(recordId)
 
       return {
         recordId: record.id,
@@ -78,7 +85,7 @@ export class AirtableClient {
       fields[AirtableFieldNames.AdFetchJobs.completedAt] = metadata.completedAt
     }
 
-    await base(AirtableTables.AD_FETCH_JOBS).update(recordId, fields)
+    await getBase()(AirtableTables.AD_FETCH_JOBS).update(recordId, fields)
   }
 
   // ========== BRANDS ==========
@@ -89,7 +96,7 @@ export class AirtableClient {
    */
   async getBrandRecord(recordId: string): Promise<Brand | null> {
     try {
-      const record = await base(AirtableTables.BRANDS).find(recordId)
+      const record = await getBase()(AirtableTables.BRANDS).find(recordId)
 
       return {
         recordId: record.id,
@@ -114,7 +121,7 @@ export class AirtableClient {
     const formula = `OR(${recordIds.map(id => `RECORD_ID()='${id}'`).join(',')})`
 
     try {
-      const records = await base(AirtableTables.BRANDS)
+      const records = await getBase()(AirtableTables.BRANDS)
         .select({ filterByFormula: formula })
         .all()
 
@@ -141,7 +148,7 @@ export class AirtableClient {
     const brands: Brand[] = []
 
     try {
-      const records = await base(AirtableTables.BRANDS)
+      const records = await getBase()(AirtableTables.BRANDS)
         .select({
           sort: [{ field: AirtableFieldNames.Brands.createdAt, direction: 'desc' }]
         })
@@ -194,7 +201,7 @@ export class AirtableClient {
             // Update existing record
             const existingRecord = existingRecords[0]
 
-            await base(AirtableTables.ADS).update(existingRecord.id, {
+            await getBase()(AirtableTables.ADS).update(existingRecord.id, {
               [AirtableFieldNames.Ads.endDate]: ad.endDate,
               [AirtableFieldNames.Ads.status]: ad.status,
               [AirtableFieldNames.Ads.impressions]: ad.impressions,
@@ -212,7 +219,7 @@ export class AirtableClient {
             stats.updated++
           } else {
             // Create new record
-            await base(AirtableTables.ADS).create({
+            await getBase()(AirtableTables.ADS).create({
               [AirtableFieldNames.Ads.adId]: ad.adId,
               [AirtableFieldNames.Ads.adArchiveId]: ad.adArchiveId,
               [AirtableFieldNames.Ads.pageId]: ad.pageId,
@@ -275,7 +282,7 @@ export class AirtableClient {
     formula += ')'
 
     try {
-      const records = await base(AirtableTables.ADS)
+      const records = await getBase()(AirtableTables.ADS)
         .select({
           filterByFormula: formula,
           maxRecords: filters?.limit || 100,
@@ -327,7 +334,7 @@ export class AirtableClient {
     }
   ): Promise<void> {
     try {
-      await base(AirtableTables.ADS).update(recordId, {
+      await getBase()(AirtableTables.ADS).update(recordId, {
         [AirtableFieldNames.Ads.analysisInsights]: analysis.insights,
         [AirtableFieldNames.Ads.analysisThemes]: analysis.themes?.join(', '),
         [AirtableFieldNames.Ads.analysisSentiment]: analysis.sentiment,
@@ -362,7 +369,7 @@ export class AirtableClient {
         formula = `{${AirtableFieldNames.Ads.brand}} = '${filters.brandId}'`
       }
 
-      const records = await base(AirtableTables.ADS)
+      const records = await getBase()(AirtableTables.ADS)
         .select({
           filterByFormula: formula,
           maxRecords: filters?.limit || 100,
