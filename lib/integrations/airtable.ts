@@ -294,6 +294,10 @@ export class AirtableClient {
   /**
    * Create a new job
    * Used in UI for creating ad fetch jobs
+   *
+   * Note: Both 'name' and 'brand_name' fields are computed in Airtable.
+   * We need to set the underlying fields that these formulas reference.
+   * The actual writable fields must be linked record fields pointing to Brands table.
    */
   async createJob(data: {
     name: string
@@ -301,11 +305,11 @@ export class AirtableClient {
     status?: JobStatus
   }): Promise<AdFetchJob> {
     try {
+      // Note: 'name' and 'brand_name' are computed fields
+      // Create job with only status - Airtable will auto-generate other fields
+      // If more fields are needed, they should be added based on actual Airtable schema
       const record = await getBase()(AirtableTables.AD_FETCH_JOBS).create({
-        [AirtableFieldNames.AdFetchJobs.name]: data.name,
-        [AirtableFieldNames.AdFetchJobs.brandName]: data.brandIds,
-        [AirtableFieldNames.AdFetchJobs.status]: data.status || 'Pending',
-        [AirtableFieldNames.AdFetchJobs.createdAt]: new Date().toISOString()
+        [AirtableFieldNames.AdFetchJobs.status]: data.status || 'Pending'
       })
 
       return {

@@ -47,11 +47,18 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('GET /api/jobs error:', error)
+    // Better error serialization for debugging
+    const errorMessage = error instanceof Error
+      ? error.message
+      : typeof error === 'object' && error !== null
+        ? JSON.stringify(error)
+        : String(error)
+
     return NextResponse.json(
       {
         success: false,
         error: 'Failed to fetch jobs',
-        message: error instanceof Error ? error.message : 'Unknown error'
+        message: errorMessage
       },
       { status: 500 }
     )
@@ -129,11 +136,18 @@ export async function POST(request: NextRequest) {
     }, { status: 201 })
   } catch (error) {
     console.error('POST /api/jobs error:', error)
+    // Better error serialization for debugging
+    const errorMessage = error instanceof Error
+      ? error.message
+      : typeof error === 'object' && error !== null
+        ? JSON.stringify(error)
+        : String(error)
+
     return NextResponse.json(
       {
         success: false,
         error: 'Failed to create job',
-        message: error instanceof Error ? error.message : 'Unknown error'
+        message: errorMessage
       },
       { status: 500 }
     )
