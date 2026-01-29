@@ -392,7 +392,7 @@ export class AirtableClient {
       for (const ad of batch) {
         try {
           // Search for existing ad by ad_archive_id (primary deduplication key)
-          const existingRecords = await base(AirtableTables.ADS)
+          const existingRecords = await getBase()(AirtableTables.ADS)
             .select({
               filterByFormula: `{${AirtableFieldNames.Ads.adArchiveId}} = '${ad.adArchiveId}'`,
               maxRecords: 1
